@@ -1,0 +1,114 @@
+<?php include "../inc/dbinfo.inc"; ?>
+<html>
+<body>
+<h1>Products Page</h1>
+<?php
+
+  $connection = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD);
+
+  if (mysqli_connect_errno()) echo "Failed to connect to MySQL: " . mysqli_connect_error();
+
+  $database = mysqli_select_db($connection, DB_DATABASE);
+
+  VerifyProductsTable($connection, DB_DATABASE);
+
+  $product_name = htmlentities($_POST['NAME']);
+  $product_description = htmlentities($_POST['DESCRIPTION']);
+  $product_price = htmlentities($_POST['PRICE']);
+  $product_category = htmlentities($_POST['CATEGORY']);
+
+  if (strlen($product_name) || strlen($product_description) || strlen($product_price) || strlen($product_category)) {
+    AddProduct($connection, $product_name, $product_description, $product_price, $product_category);
+  }
+?>
+
+<form action="<?PHP echo $_SERVER['SCRIPT_NAME'] ?>" method="POST">
+  <table border="0">
+    <tr>
+      <td>NAME</td>
+      <td>DESCRIPTION</td>
+      <td>PRICE</td>
+      <td>CATEGORY</td>
+    </tr>
+    <tr>
+      <td><input type="text" name="NAME" maxlength="45" size="30" /></td>
+      <td><input type="text" name="DESCRIPTION" maxlength="255" size="60" /></td>
+      <td><input type="text" name="PRICE" maxlength="10" size="10" /></td>
+      <td><input type="text" name="CATEGORY" maxlength="45" size="30" /></td>
+      <td><input type="submit" value="Add Product" /></td>
+    </tr>
+  </table>
+</form>
+
+<table border="1" cellpadding="2" cellspacing="2">
+  <tr>
+    <td>ID</td>
+    <td>NAME</td>
+    <td>DESCRIPTION</td>
+    <td>PRICE</td>
+    <td>CATEGORY</td>
+  </tr>
+
+<?php
+
+$result = mysqli_query($connection, "SELECT * FROM PRODUCTS");
+
+while($query_data = mysqli_fetch_row($result)) {
+  echo "<tr>";
+  echo "<td>",$query_data[0], "</td>",
+       "<td>",$query_data[1], "</td>",
+       "<td>",$query_data[2], "</td>",
+       "<td>",$query_data[3], "</td>",
+       "<td>",$query_data[4], "</td>";
+  echo "</tr>";
+}
+
+mysqli_free_result($result);
+mysqli_close($connection);
+
+?>
+
+</table>
+</body>
+</html>
+
+<?php
+
+function AddProduct($connection, $name, $description, $price, $category) {
+   $n = mysqli_real_escape_string($connection, $name);
+   $d = mysqli_real_escape_string($connection, $description);
+   $p = mysqli_real_escape_string($connection, $price);
+   $c = mysqli_real_escape_string($connection, $category);
+
+   $query = "INSERT INTO PRODUCTS (NAME, DESCRIPTION, PRICE, CATEGORY) VALUES ('$n', '$d', '$p', '$c');";
+
+   if(!mysqli_query($connection, $query)) echo("<p>Error adding product data.</p>");
+}
+
+function VerifyProductsTable($connection, $dbName) {
+  if(!TableExists("PRODUCTS", $connection, $dbName))
+  {
+     $query = "CREATE TABLE PRODUCTS (
+         ID int(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+         NAME VARCHAR(45),
+         DESCRIPTION VARCHAR(255),
+         PRICE DECIMAL(10,2),
+         CATEGORY VARCHAR(45)
+       )";
+
+     if(!mysqli_query($connection, $query)) echo("<p>Error creating table.</p>");
+  }
+}
+
+function TableExists($tableName, $connection, $dbName) {
+  $t = mysqli_real_escape_string($connection, $tableName);
+  $d = mysqli_real_escape_string($connection, $dbName);
+
+  $checktable = mysqli_query($connection,
+      "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_NAME = '$t' AND TABLE_SCHEMA = '$d'");
+
+  if(mysqli_num_rows($checktable) > 0) return true;
+
+  return false;
+}
+?>
