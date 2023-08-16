@@ -33,7 +33,7 @@
     <tr>
       <td><input type="text" name="NAME" maxlength="45" size="30" /></td>
       <td><input type="text" name="DESCRIPTION" maxlength="255" size="60" /></td>
-      <td><input type="text" name="PRICE" maxlength="10" size="10" /></td>
+      <td><input type="number" name="PRICE" maxlength="10" size="10" /></td>
       <td><input type="text" name="CATEGORY" maxlength="45" size="30" /></td>
       <td><input type="submit" value="Add Product" /></td>
     </tr>
